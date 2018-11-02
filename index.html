@@ -1,0 +1,465 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>jQuery Mobile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-form-validator/2.3.26/jquery.form-validator.min.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div data-role="page" id="home">
+  <div data-role="header">
+    <h1>Casino Spil</h1>
+  </div>
+  <div role="main" class="ui-content">
+    <p><a href="#guessinggame" rel="external">Gættespil<img src="images/guess_number.png" width="300" height="300"></a></p>
+  </div>
+  <div role="main" class="ui-content">
+    <p><a href="#tictactoe" rel="external">Kryds og bolle<img src="images/kryds_og_bolle.png" width="300" height="300"></a></p>
+  </div>
+  <div role="main" class="ui-content">
+    <p><a href="#quiz" rel="external">Quiz<img src="images/quiz.png" width="300" height="300"></a></p>
+  </div>
+</div>
+
+<!--Guessing game-->
+<div data-role="page" id="guessinggame">
+  <div data-role="header"> <a href="#home">Hjem</a>
+    <h1 id="guess-title">Gættespil</h1>
+    <a href="#tictactoe">Næste spil</a> </div>
+  <div role="main" class="ui-content"> </div>
+  <script>
+		$( document ).ready(function() {
+			
+			//en custom language object
+			var myErrorFeedback = {
+				badInt: 'Kun tal mellem 0-10'
+			}
+			//form validation
+			$.validate({
+				//language object overwritten by custom language object
+					   language : myErrorFeedback,
+					   inputParentClassOnError : 'btn btn-danger'
+					   });
+		
+  // Handler for .ready() called.
+			
+			//prevent form submission
+			 $("form").submit(function(event){
+				 console.log("Form not subitted");
+				 playGame();
+				 
+        event.preventDefault();
+			 });
+});
+	</script>
+  <div class="jumbotron">
+    <h1 class="title text-chicle">Gæt et nummer</h1>
+    <div class="col1">
+      <p id="output">Gæt et tal mellem 1 og 10</p>
+      <p>Du har 3 forsøg til at gætte tallet</p>
+    </div>
+    <div class="col2">
+      <form method="post">
+        <div class="input-group">
+          <div class="input-group-prepend"></div>
+          <input id="guess" class="form-control" data-validation="number" data-validation-allowing="range[0;10]" data-validation-error-msg-container="#error-dialog" placeholder="Enter your guess..." autofocus>
+        </div>
+        <!-- http://www.formvalidator.net/#configuration_position -->
+        <div id="error-dialog" class="mt-3"></div>
+        <button id="play" class="btn btn-success">Gæt det magiske tal</button>
+      </form>
+    </div>
+    <div class="col3">
+      <button id="playAgain" class="btn btn-outline-dark hidden">Spil igen</button>
+    </div>
+    <script>
+	
+/* 
+Things to improve ;-):
+- Prevent form submission (using jQuery!)
+- A randomized magic number! - CHECK(Math.floor((Math.random() * 10) + 1);)
+- Catch the player's guess from the form input field
+- Match the player's guess agains the magic number
+- Add proper feedback (That's too high - That's too low - You've got it)
+- Player has only 3 guesses
+- The game should prevent the player from playing after the game is finished
+- Player can only enter numbers from 0-10, not words, into the input field (JS formcheck)
+- Build an appalling ææh appealing responsive interface (Bootstrap)
+*/
+	
+//Global game variables
+var magicNumber, input, output, button, playersGuess, guessesRemaining;
+	
+magicNumber = Math.floor(Math.random() * 11); //random number 0-10
+console.log(magicNumber);
+
+//The game "controls"
+input = document.getElementById("guess");
+output = document.getElementById("output");
+button = document.getElementById("playAgain");
+button.addEventListener('click', playAgain);	
+
+//Game state variable
+guessesRemaining = 3;
+	
+	
+function playGame(){
+	// core functionality:
+    // handling the game statistics (guessesRemaining)
+	playersGuess = parseInt(input.value); // converting string input to number!
+	//console.log(playersGuess);
+	// countdown
+	guessesRemaining -= 1;
+	// analyzing the player's guess (i.e. the variable playersGuess!)
+	if(playersGuess < magicNumber){
+		output.innerHTML = playersGuess + ' is too low! ' + guessesRemaining + ' guesses left.';
+		// clear the input field
+		input.value = '';
+		// autofocus
+		input.focus();
+	} else if(playersGuess > magicNumber){
+		output.innerHTML = playersGuess + ' is too high! ' + guessesRemaining + ' guesses left.';
+		input.value = '';
+		input.focus();
+	} else if(playersGuess === magicNumber){
+		output.innerHTML = 'You got it! ' + playersGuess + ' is the magic number!';
+		endGame();
+	} 
+	// last attempt
+	if(guessesRemaining === 0 && playersGuess === magicNumber){
+		output.innerHTML = 'Yes - in the final attempt! ' + playersGuess + ' is the magic number!';
+		endGame();
+	} else if(guessesRemaining === 0){
+		output.innerHTML = 'Sorry - no more guesses left. The magic number was ' + magicNumber + '. Game over.';
+		endGame();
+	}
+	/*
+	= is assignment
+	== is a equality
+	=== is strict equality
+	*/
+}
+	//end of function
+	
+function endGame(){	
+	// disabling all game controls
+	$("#playAgain").removeClass("hidden");
+	$("#play").addClass("hidden");
+	//Disable the input field
+	input.disabled = true;
+}
+	
+function playAgain(){
+	window.location.reload(true);
+}
+	
+</script> 
+  </div>
+</div>
+
+<!--tic tac toe-->
+<div data-role="page" id="tictactoe">
+  <div data-role="header"> <a href="#home">Hjem</a>
+    <h1>Kryds og bolle</h1>
+    <a href="#quiz">Næste spil</a> </div>
+  <div role="main" class="ui-content"> </div>
+  <div class="container"> 
+    <!-- "Hero" unit -->
+    <div class="jumbotron">
+      <h1 class="display-4 text-center">Kryds og bolle</h1>
+    </div>
+    <!-- main content -->
+    <div class="row"> 
+      <!-- 2 columns, reordered on medium devices and up --> 
+      <!-- First column -->
+      <div class="col-lg-6 order-lg-2">
+        <table>
+          <tbody>
+            <tr>
+              <td id="1">&nbsp;</td>
+              <td id="2">&nbsp;</td>
+              <td id="3">&nbsp;</td>
+            </tr>
+            <tr>
+              <td id="4">&nbsp;</td>
+              <td id="5">&nbsp;</td>
+              <td id="6">&nbsp;</td>
+            </tr>
+            <tr>
+              <td id="7">&nbsp;</td>
+              <td id="8">&nbsp;</td>
+              <td id="9">&nbsp;</td>
+            </tr>
+          </tbody>
+        </table>
+        <div id="msg" class="text-center alert alert-success" role="alert">Tryk på felterne for at spille</div>
+        <button id="playAgain1" class="mt-3 mb-3 p-3 btn btn-secondary hidden">Spil igen</button>
+      </div>
+      <!-- Second column -->
+      <div class="col-lg-6 order-lg-1">
+        <div class="text-center">2 spillere</div>
+        <hr>
+        <p>Spiller 1 score: <span id="player1"></span></p>
+        <p>Spiller 2 score: <span id="player2"></span></p>
+        <p>Uafgjort <span id="draw"></span></p>
+        <hr>
+      </div>
+    </div>
+    <!-- Container end --> 
+  </div>
+  <script>
+	
+	/*
+	
+	Stuff to handle ;-):
+	1. Make the fields clickable (player0 uses "X", player1 "0")
+	2. Keep track of all used fields (fieldsPlayed) and of the fields each player chose (fieldsPlayer1, fieldsPlayer2)
+	3. Avoid that �sed fields can be played again and implement feedback like "Field already taken" (alert();)
+	4. Check for winning combinations
+	5. Implement feedback to the players (winning or game is a draw)
+	6. End the game, avoid further playing
+	7. Add a "Play again button"
+	8. Implement game statistics (local storage!)
+	9. Style the game to fit in the given Bootstrap layout ;-)
+	
+	*/
+	
+	// global game variables
+	var player, fields, fieldsPlayed, fieldsPlayer1, fieldsPlayer2, winningFields, msg, playButton;
+	
+	//global statistics variables
+	var p1Stats, p2Stats, drawStats;
+	
+	player = 1;
+	// an array for all played fields
+	fieldsPlayed = [];
+	// arrays for each player
+	fieldsPlayer1 = [];
+	fieldsPlayer2 = [];
+	
+	// make all fields clickable
+	fields = document.getElementsByTagName('td');
+	
+	for(let i = 0; i < fields.length; i++  ){
+		fields[i].addEventListener('click', play);
+	}
+	
+	msg = document.getElementById('msg');
+	// Play again:
+	playButton = document.getElementById("playAgain1");
+	playButton.addEventListener('click', playAgain1);
+	
+	// assignment.
+	p1Stats = document.getElementById('player1');
+	p2Stats = document.getElementById('player2');
+	drawStats = document.getElementById('draw');
+	
+	function play(){
+		// game core mechanics, marking the fields
+		//console.log('play!');
+		if(fieldsPlayed.includes(this.id)){
+			alert('Field already taken!');
+		}
+		
+		if(player === 1 && !fieldsPlayed.includes(this.id)){
+		// this addresses the "owner" of the function, i.e. <td>
+		this.innerHTML = 'X';
+		this.style.color = 'white';
+		fieldsPlayer1.push(parseInt(this.id));
+		console.log('Player 1 played ' + fieldsPlayer1.toString());
+		player = 2;
+		} else if(player === 2 && !fieldsPlayed.includes(this.id)){
+			this.innerHTML = '0';
+			this.style.color = 'darkturquoise';
+			fieldsPlayer2.push(parseInt(this.id));
+			console.log('Player 2 played ' + fieldsPlayer2.toString());
+			player = 1;
+		}
+		// store field in array
+		fieldsPlayed.push(this.id);
+		//console.log(this.id + ' clicked!');
+		// checking for a winning combination
+		win();
+	}
+		
+	function win(){
+		// analyzing field choices, winning conditions, feedback
+		if(
+			// player 1 winners
+			fieldsPlayer1.includes(1) && fieldsPlayer1.includes(2) && fieldsPlayer1.includes(3) ||
+		  	fieldsPlayer1.includes(4) && fieldsPlayer1.includes(5) && fieldsPlayer1.includes(6) ||
+		  	fieldsPlayer1.includes(7) && fieldsPlayer1.includes(8) && fieldsPlayer1.includes(9) ||
+		  	fieldsPlayer1.includes(1) && fieldsPlayer1.includes(5) && fieldsPlayer1.includes(9) ||
+		  	fieldsPlayer1.includes(3) && fieldsPlayer1.includes(5) && fieldsPlayer1.includes(7)	||
+		  	fieldsPlayer1.includes(1) && fieldsPlayer1.includes(4) && fieldsPlayer1.includes(7) ||
+		  	fieldsPlayer1.includes(2) && fieldsPlayer1.includes(5) && fieldsPlayer1.includes(8) ||
+		  	fieldsPlayer1.includes(3) && fieldsPlayer1.includes(6) && fieldsPlayer1.includes(9)	
+		)
+			{
+			msg.innerHTML = "Player 1 won!";
+				//statistics update
+				let player1score = localStorage.getItem('player1'); //gets value from localstorage
+				player1score++; //increments the value
+				localStorage.setItem('player1', player1score);//submits the value to localstorage
+				
+			gameOver()
+		} else if (
+			// player 2 winners
+			fieldsPlayer2.includes(1) && fieldsPlayer2.includes(2) && fieldsPlayer2.includes(3) ||
+		  	fieldsPlayer2.includes(4) && fieldsPlayer2.includes(5) && fieldsPlayer2.includes(6) ||
+		  	fieldsPlayer2.includes(7) && fieldsPlayer2.includes(8) && fieldsPlayer2.includes(9) ||
+		  	fieldsPlayer2.includes(1) && fieldsPlayer2.includes(5) && fieldsPlayer2.includes(9) ||
+		  	fieldsPlayer2.includes(3) && fieldsPlayer2.includes(5) && fieldsPlayer2.includes(7) ||
+		  	fieldsPlayer2.includes(1) && fieldsPlayer2.includes(4) && fieldsPlayer2.includes(7) ||
+		  	fieldsPlayer2.includes(2) && fieldsPlayer2.includes(5) && fieldsPlayer2.includes(8) ||
+		  	fieldsPlayer2.includes(3) && fieldsPlayer2.includes(6) && fieldsPlayer2.includes(9)
+		)
+			{
+			msg.innerHTML = "Player 2 won!";
+				//statistics update
+				let player2score = localStorage.getItem('player2'); //gets value from localstorage
+				player2score++; //increments the value
+				localStorage.setItem('player2', player2score);//submits the value to localstorage
+			gameOver()
+		} else if (
+			// game is a draw
+			fieldsPlayed.length === 9
+		)
+			{
+			msg.innerHTML = "Game is a draw!";
+				//statistics update
+				let drawscare = localStorage.getItem('draw'); //gets value from localstorage
+				drawscore++; //increments the value
+				localStorage.setItem('draw', drawscore);//submits the value to localstorage
+			gameOver()
+		}
+	}
+
+	function gameOver(){
+		// ending the game
+		// removing ALL event listeners
+		gameStats();
+		
+		 for (var i = 0; i < fields.length; i++) {
+			fields[i].removeEventListener('click', play); 
+		}
+		// activate the play again button, JS style (% jQuery)
+		playButton.classList.remove("hidden");
+	}
+	
+	function playAgain1(){
+		// restart the game
+		window.location.reload(true);
+	}
+	
+	function gameStats(){
+		// game stats using local storage
+		
+		// preparing local storage
+		if(!localStorage.getItem('player1')){
+			localStorage.setItem('player1', 0);
+			localStorage.setItem('player2', 0);
+			localStorage.setItem('draw', 0);
+		}
+		
+		// reading from local storage
+		let player1score = localStorage.getItem('player1')
+		let player2score = localStorage.getItem('player2')
+		let drawscore = localStorage.getItem('draw')
+		
+		// display the value from local storage
+		p1Stats.innerHTML = player1score;
+		p2Stats.innerHTML = player2score;
+		drawStats.innerHTML = drawscore;
+	}
+	//initializing game stats
+	gameStats();
+</script> 
+</div>
+
+<!--quiz-->
+<div data-role="page" id="quiz">
+  <div data-role="header"> <a href="#home">Hjem</a>
+    <h1>Quiz</h1>
+    <a href="#guessinggame">Næste spil</a> </div>
+  <div role="main" class="ui-content"> </div>
+  <div class="jumbotron">
+    <p id="question"></p>
+    <form id="myForm" method="post">
+      <div class="quiz-container">
+        <p>
+          <input type="radio" name="choice" value="donald trump">
+        <div class="answer">Donald Trump</div>
+        </p>
+        <p>
+          <input type="radio" name="choice" value="peter pan">
+        <div class="answer">Peter Pan</div>
+        </p>
+        <p>
+          <input type="radio" name="choice" value="medina">
+        <div class="answer">Medina</div>
+        </p>
+      </div>
+      <button type="submit" id="submit">Submit your answer!</button>
+    </form>
+    <p id="feedback"></p>
+    <script>
+	// 2 globale variabler (konstanter)
+	const question = 'Hvem er den 45. præsident af USA?';
+	const solution = 'donald trump';
+	
+	var questionText = document.getElementById('question');
+	var myForm = document.getElementById('myForm');
+	var feedback = document.getElementById('feedback');
+	
+	// activating the button for form submission
+	
+	document.getElementById('submit').addEventListener('click', function(e){
+		e.preventDefault(); // forhindrer at formen bliver sendt
+		validateAnswer();
+	});
+		
+	//console.log(questionText);
+	questionText.innerHTML = question;
+	
+	// get the radio buttons!
+	var choices = document.getElementsByTagName('input');
+	//console.log(choices[0].value); // choices is an array!
+	//console.log(choices[1].value);
+	
+	function validateAnswer(){
+		
+		// for loop (especially for arrays ;-)
+		
+		for(var i = 0; i < choices.length; i++ ){
+			// run as long as condition is true
+			console.log(choices[i].value);
+			
+			// compare input value and right answer
+			if(choices[i].checked && choices[i].value === solution){
+				feedback.innerHTML = 'That\'s correct!';
+				// force stop loop
+				console.log('correct!');
+				break;
+			} else {
+				feedback.innerHTML = 'You got it all wrong!';
+				console.log('not correct!');
+			}
+		}
+		
+	}
+	
+	
+</script> 
+  </div>
+</div>
+</body>
+</html>

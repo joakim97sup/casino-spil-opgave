@@ -1,0 +1,47 @@
+@charset "utf-8";
+table {
+	width: 100%;
+	border-collapse: collapse;
+	background-color: #D1C7C7;
+}
+td {
+	border: 6px solid white;
+	width: 33.333%;
+	font-family: Helvetica, Arial, "sans-serif";
+	text-align: center;
+	font-size: 5em;
+	vertical-align: middle;
+}
+/* https://spin.atomicobject.com/2015/07/14/css-responsive-square/ */
+td:after {
+	content: "";
+	display: block;
+	padding-bottom: 10%;
+}
+td:first-of-type {
+	border-left-color: transparent;
+	border-top-color: transparent;
+}
+td:nth-of-type(2) {
+	border-top-color: transparent;
+}
+td:nth-of-type(3) {
+	border-right-color: transparent;
+	border-top-color: transparent;
+}
+tr:nth-of-type(3) td {
+	border-bottom-color: transparent;
+}
+/*quiz*/
+.quiz-container{
+	display: inline;
+	flex-wrap: wrap;
+	width: 100%;
+}
+.ui-radio{
+	width: 20%;
+}
+.answer{
+	width: 80%;
+	margin-left: 30px;
+}
